@@ -1,0 +1,189 @@
+﻿@page "/"
+@using ChronoConfigLib
+
+<h1>Mix</h1>
+
+@foreach (var track in Tracks)
+{
+    <div class="card">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <InputText @bind-Value="track.Name" class="form-control" placeholder="Track Name" />
+                </div>
+                <div class="col-md-3">
+                    <InputText @bind-Value="track.StartTime" class="form-control" placeholder="Track Time" />
+                </div>
+                <div class="col-md-3">
+                    <InputSelect @bind-Value="track.StartType" class="form-select">
+                        <option value="@TrackSectionType.NONE">-- Select --</option>
+                        <option value="@TrackSectionType.INTRO">INTRO</option>
+                        <option value="@TrackSectionType.CHORUS">CHORUS</option>
+                        <option value="@TrackSectionType.BUILDUP">BUILDUP</option>
+                        <option value="@TrackSectionType.BREAKDOWN">BREAKDOWN</option>
+                        <option value="@TrackSectionType.OUTRO">OUTRO</option>
+                    </InputSelect>
+                </div>
+                <div class="col-md-3">
+                    <div class="btn-group" role="group">
+                        @if (track.IsLast)
+                        {
+                            <button @onclick="() => OnTrackAddClick()" type="button" class="btn btn-success">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                                </svg>
+                            </button>
+                        }
+                        @if (track.IsLast && track.Number != 1)
+                        {
+                            <button @onclick="() => OnTrackDeleteClick(track)" type="button" class="btn btn-danger">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
+                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708" />
+                                </svg>
+                            </button>
+                        }
+                    </div>
+                </div>
+
+                @foreach (var section in track.Sections)
+                {
+                    <div class="col-md-3">
+                        <InputText @bind-Value="section.Comment" class="form-control" placeholder="Comment" />
+                    </div>
+                    <div class="col-md-3">
+                        <InputText @bind-Value="section.StartTime" class="form-control" placeholder="Section Time" />
+                    </div>
+                    <div class="col-md-3">
+                        <InputSelect @bind-Value="section.Type" class="form-select">
+                            <option value="@TrackSectionType.NONE">-- Select --</option>
+                            <option value="@TrackSectionType.INTRO">INTRO</option>
+                            <option value="@TrackSectionType.CHORUS">CHORUS</option>
+                            <option value="@TrackSectionType.BUILDUP">BUILDUP</option>
+                            <option value="@TrackSectionType.BREAKDOWN">BREAKDOWN</option>
+                            <option value="@TrackSectionType.OUTRO">OUTRO</option>
+                        </InputSelect>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="btn-group" role="group">
+                            @if (section.IsLast)
+                            {
+                                <button @onclick="() => OnSectionAddClick(track)" type="button" class="btn btn-secondary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle-dotted" viewBox="0 0 16 16">
+                                        <path d="M8 0q-.264 0-.523.017l.064.998a7 7 0 0 1 .918 0l.064-.998A8 8 0 0 0 8 0M6.44.152q-.52.104-1.012.27l.321.948q.43-.147.884-.237L6.44.153zm4.132.271a8 8 0 0 0-1.011-.27l-.194.98q.453.09.884.237zm1.873.925a8 8 0 0 0-.906-.524l-.443.896q.413.205.793.459zM4.46.824q-.471.233-.905.524l.556.83a7 7 0 0 1 .793-.458zM2.725 1.985q-.394.346-.74.74l.752.66q.303-.345.648-.648zm11.29.74a8 8 0 0 0-.74-.74l-.66.752q.346.303.648.648zm1.161 1.735a8 8 0 0 0-.524-.905l-.83.556q.254.38.458.793l.896-.443zM1.348 3.555q-.292.433-.524.906l.896.443q.205-.413.459-.793zM.423 5.428a8 8 0 0 0-.27 1.011l.98.194q.09-.453.237-.884zM15.848 6.44a8 8 0 0 0-.27-1.012l-.948.321q.147.43.237.884zM.017 7.477a8 8 0 0 0 0 1.046l.998-.064a7 7 0 0 1 0-.918zM16 8a8 8 0 0 0-.017-.523l-.998.064a7 7 0 0 1 0 .918l.998.064A8 8 0 0 0 16 8M.152 9.56q.104.52.27 1.012l.948-.321a7 7 0 0 1-.237-.884l-.98.194zm15.425 1.012q.168-.493.27-1.011l-.98-.194q-.09.453-.237.884zM.824 11.54a8 8 0 0 0 .524.905l.83-.556a7 7 0 0 1-.458-.793zm13.828.905q.292-.434.524-.906l-.896-.443q-.205.413-.459.793zm-12.667.83q.346.394.74.74l.66-.752a7 7 0 0 1-.648-.648zm11.29.74q.394-.346.74-.74l-.752-.66q-.302.346-.648.648zm-1.735 1.161q.471-.233.905-.524l-.556-.83a7 7 0 0 1-.793.458zm-7.985-.524q.434.292.906.524l.443-.896a7 7 0 0 1-.793-.459zm1.873.925q.493.168 1.011.27l.194-.98a7 7 0 0 1-.884-.237zm4.132.271a8 8 0 0 0 1.012-.27l-.321-.948a7 7 0 0 1-.884.237l.194.98zm-2.083.135a8 8 0 0 0 1.046 0l-.064-.998a7 7 0 0 1-.918 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3z" />
+                                    </svg>
+                                </button>
+                            }
+                            @if (section.IsLast && section.Number != 1)
+                            {
+                                <button @onclick="() => OnSectionDeleteClick(track, section)" type="button" class="btn btn-danger">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
+                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708" />
+                                    </svg>
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    public List<Track> Tracks { get; set; } = new List<Track>();
+
+    protected override void OnInitialized()
+    {
+        var initialtrack = CreateEmptyTrack(1);
+        initialtrack.IsLast = true;
+        initialtrack.Sections[0].IsLast = true;
+
+        Tracks = [initialtrack];
+    }
+
+    private void OnTrackAddClick()
+    {
+        Tracks.Add(CreateEmptyTrack(Tracks.Count + 1));
+        SetLastTrack();
+    }
+
+    private void OnTrackDeleteClick(Track deletedTrack)
+    {
+        Tracks.Remove(deletedTrack);
+        SetLastTrack();
+    }
+
+    private void SetLastTrack()
+    {
+        for (var i = 0; i < Tracks.Count; i++)
+        {
+            if (i == Tracks.Count - 1)
+            {
+                Tracks[i].IsLast = true;
+            }
+            else
+            {
+                Tracks[i].IsLast = false;
+            }
+        }
+    }
+
+    private void OnSectionAddClick(Track currentTrack)
+    {
+        currentTrack.Sections.Add(CreateEmptySection(currentTrack.Sections.Count + 1));
+        SetLastSection(currentTrack);
+    }
+
+    private void OnSectionDeleteClick(Track currentTrack, TrackSection deletedSection)
+    {
+        var trackIndex = Tracks.FindIndex(t => t.Number == currentTrack.Number);
+        var track = Tracks[trackIndex];
+
+        track.Sections.Remove(deletedSection);
+        SetLastSection(track);
+    }
+
+    private void SetLastSection(Track currentTrack)
+    {
+        for (var i = 0; i < currentTrack.Sections.Count; i++)
+        {
+            if (i == currentTrack.Sections.Count - 1)
+            {
+                currentTrack.Sections[i].IsLast = true;
+            }
+            else
+            {
+                currentTrack.Sections[i].IsLast = false;
+            }
+        }
+    }
+
+    private Track CreateEmptyTrack(int number)
+    {
+        return new Track
+        {
+            Number = number,
+            Name = "",
+            StartTime = "",
+            StartType = TrackSectionType.NONE,
+            Sections = new List<TrackSection>
+            {
+                CreateEmptySection(1)
+            }
+        };
+    }
+
+    private TrackSection CreateEmptySection(int number)
+    {
+        return new TrackSection
+        {
+            Number = number,
+            Comment = "",
+            StartTime = "",
+            Type = TrackSectionType.NONE
+        };
+    }
+}
