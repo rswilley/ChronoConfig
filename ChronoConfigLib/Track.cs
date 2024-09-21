@@ -1,5 +1,6 @@
 ﻿namespace ChronoConfigLib
 {
+
     public class Mix
     {
         public string Bpm { get; set; } = string.Empty;
@@ -29,6 +30,7 @@
     public enum TrackSectionType
     {
         NONE,
+        START,
         INTRO,
         CHORUS,
         BREAKDOWN,

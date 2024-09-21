@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+﻿using System.Text;
 
 namespace ChronoConfigLib
 {
@@ -12,88 +6,91 @@ namespace ChronoConfigLib
     {
         public ConfigResult Create(Mix mix)
         {
-            var errors = Validate(mix);
-            if (errors.Count != 0)
+            var endingSection = mix.Tracks.Select(t => t.Sections.Single(s => s.Type == TrackSectionType.END)).Single();
+            int totalSeconds = 0;
+            if (endingSection != null)
             {
-                return new ConfigResult
-                {
-                    IsValid = false,
-                    ErrorMessages = errors
-                };
+                totalSeconds = (int)TimeSpan.Parse(endingSection.StartTime).TotalSeconds;
             }
 
-            return new ConfigResult();
+            var fps = Convert.ToInt32(mix.Fps);
+            var promptLengthInSeconds = Convert.ToInt32(mix.PromptInterval);
+            var cadence = Convert.ToInt32(mix.Cadence);
+
+            var prompts = GeneratePrompts(mix.Tracks, fps, promptLengthInSeconds);
+            var totalFrames = (totalSeconds * fps) + (cadence / 2);
+
+            return new ConfigResult
+            {
+                TotalFrames = totalFrames,
+                Prompts = prompts
+            };
         }
 
-        private static Dictionary<string, string> Validate(Mix mix)
+        private Dictionary<string, string> GeneratePrompts(List<Track> tracks, int fps, int promptLengthInSeconds)
         {
-            var errors = new Dictionary<string, string>();
-            
-            ValidateIsNumber(nameof(mix.Bpm), mix.Bpm, errors);
-            ValidateIsNumber(nameof(mix.Fps), mix.Fps, errors);
-            ValidateIsNumber(nameof(mix.Cadence), mix.Cadence, errors);
-            ValidateIsNumber(nameof(mix.PromptInterval), mix.PromptInterval, errors);
+            var prompts = new Dictionary<string, string>();
+            //var movementSchedule = new MovementSchedule();
 
-            if (mix.Tracks?.Count == 0)
+            foreach (var track in tracks)
             {
-                errors.Add("Tracks", "At least one track is required");
-            } else if (mix.Tracks?.Any(t => t.Sections?.Count == 0) == true)
-            {
-                errors.Add("Sections", "At least one section is required");
-            }
-
-            var hasSectionTypeUnset = mix.Tracks?.Any(t => t.Sections.Any(s => s.Type == TrackSectionType.NONE)) == true;
-            if (hasSectionTypeUnset)
-            {
-                errors.Add("SectionType", "All sections must have their Type set");
-            }
-
-            var hasNoEndingSection = mix.Tracks?.Any(t => t.Sections.Any(s => s.Type == TrackSectionType.END)) == false;
-            if (hasNoEndingSection)
-            {
-                errors.Add("EndingSection", "Must have an ending section");
-            }
-
-            var previousMs = 0d;
-            var startTime = new TimeSpan();
-            foreach (var track in mix.Tracks!)
-            {
-                foreach (var section in track.Sections)
+                for (int sectionIndex = 0; sectionIndex < track.Sections.Count - 1; sectionIndex++)
                 {
-                    if (!TimeSpan.TryParse(section.StartTime, out startTime))
-                    {
-                        errors.Add("StartTime", "Invalid Start Time");
-                        break;
-                    }
-                    else if (startTime.TotalMilliseconds < previousMs)
-                    {
-                        errors.Add("StartTime", "Start Time is less than previous");
-                        break;
-                    }
+                    var currentSection = track.Sections[sectionIndex];
+                    var currentSectionStartTime = TimeSpan.Parse(currentSection.StartTime);
+                    var currentSectionFrame = GetFrameFromTime(currentSectionStartTime, fps);
 
-                    previousMs = startTime.TotalMilliseconds;
+                    //HandleSectionType(currentSection, movementSchedule, currentSectionFrame, track.Frames, settings);
+
+                    prompts.Add(currentSectionFrame.ToString(), GetPromptText(currentSection, false));
+
+                    if (currentSectionStartTime.TotalSeconds > promptLengthInSeconds)
+                    {
+                        var remainingSeconds = currentSectionStartTime.TotalSeconds - promptLengthInSeconds;
+                        var frameIteration = currentSectionFrame;
+                        while (remainingSeconds > 0)
+                        {
+                            var subFrameIndex = frameIteration +
+                                                GetFrameFromTime(new TimeSpan(0, 0, promptLengthInSeconds), fps);
+                            prompts.Add(subFrameIndex.ToString(), GetPromptText(currentSection, true));
+                            remainingSeconds -= promptLengthInSeconds;
+                            frameIteration = subFrameIndex;
+                        }
+                    }
                 }
             }
 
-            return errors;
+            return prompts;
         }
 
-        private static void ValidateIsNumber(string errorKey, string value, Dictionary<string, string> errors)
+        private static int GetFrameFromTime(TimeSpan currentSectionStartTime, int fps)
         {
-            if (string.IsNullOrEmpty(value))
+            var frame = (int)Math.Floor(currentSectionStartTime.TotalSeconds * fps);
+            return frame;
+        }
+
+        private static string GetPromptText(TrackSection section, bool isSubPrompt)
+        {
+            var sb = new StringBuilder();
+            sb.Append(section.Type.ToString());
+
+            if (isSubPrompt)
             {
-                errors.Add(errorKey, $"{errorKey} is required");
+                sb.Append(" - " + "sub prompt");
             }
-            else if (!int.TryParse(value, out _))
+
+            if (!string.IsNullOrEmpty(section.Comment))
             {
-                errors.Add(errorKey, $"{errorKey} must be a number");
+                sb.Append($" [{section.Comment}]");
             }
+
+            return sb.ToString();
         }
     }
 
     public class ConfigResult
     {
-        public bool IsValid { get; set; }
-        public Dictionary<string, string> ErrorMessages { get; set; } = [];
+        public int TotalFrames { get; set; }
+        public Dictionary<string, string> Prompts { get; set; } = [];
     }
 }

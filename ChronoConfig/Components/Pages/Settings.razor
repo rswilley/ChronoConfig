@@ -1,0 +1,32 @@
+﻿@page "/settings"
+@inject IDialogService dialogService
+
+<h1>Settings</h1>
+
+<div class="card">
+    <div class="card-body">
+        <div class="row g-2">
+            <label for="save-directory" class="col-sm-2 col-form-label">Save Directory</label>
+            <div class="col-sm-8">
+                <InputText @bind-Value="SaveDirectory" type="text" readonly class="form-control" id="save-directory" />
+            </div>
+            <div class="col-sm-2">
+                <button @onclick="OnBrowseClick" type="submit" class="btn btn-primary mb-3">Browse</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string SaveDirectory { get; set; } = string.Empty;
+
+    protected override Task OnInitializedAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    private async void OnBrowseClick()
+    {
+        SaveDirectory = await dialogService.PickFolder();
+    }
+}
