@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChronoConfig", "ChronoConfi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChronoConfigLib", "ChronoConfigLib\ChronoConfigLib.csproj", "{9517B130-DFBC-43F6-9776-CA6748D820DB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChronoConfigLibTests", "ChronoConfigLibTests\ChronoConfigLibTests.csproj", "{F7F7DAD1-1BDA-4B59-9E80-9FC68B055007}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,6 +25,10 @@ Global
 		{9517B130-DFBC-43F6-9776-CA6748D820DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9517B130-DFBC-43F6-9776-CA6748D820DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9517B130-DFBC-43F6-9776-CA6748D820DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7F7DAD1-1BDA-4B59-9E80-9FC68B055007}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7F7DAD1-1BDA-4B59-9E80-9FC68B055007}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7F7DAD1-1BDA-4B59-9E80-9FC68B055007}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7F7DAD1-1BDA-4B59-9E80-9FC68B055007}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

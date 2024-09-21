@@ -1,11 +1,18 @@
 ﻿namespace ChronoConfigLib
 {
+    public class Mix
+    {
+        public string Bpm { get; set; } = string.Empty;
+        public string Fps { get; set; } = string.Empty;
+        public string Cadence { get; set; } = string.Empty;
+        public string PromptInterval { get; set; } = string.Empty;
+        public List<Track> Tracks { get; set ; } = [];
+    }
+
     public class Track
     {
         public int Number { get; set; }
         public string Name { get; set; } = string.Empty;
-        public string StartTime { get; set; } = string.Empty;
-        public TrackSectionType StartType { get; set; }
         public List<TrackSection> Sections { get; set; } = [];
         public bool IsLast { get; set; }
     }
@@ -26,6 +33,7 @@
         CHORUS,
         BREAKDOWN,
         BUILDUP,
-        OUTRO
+        OUTRO,
+        END
     }
 }

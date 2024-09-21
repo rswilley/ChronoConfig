@@ -3,26 +3,44 @@
 
 <h1>Mix</h1>
 
-@foreach (var track in Tracks)
-{
-    <div class="card">
-        <div class="card-body">
+<div class="card">
+    <div class="card-body">
+        <div class="row g-2">
+            <div class="col-md">
+                <div class="form-floating">
+                    <InputText @bind-Value="Model.Bpm" id="bpm" class="form-control" />
+                    <label for="bpm">BPM</label>
+                </div>
+            </div>
+            <div class="col-md">
+                <div class="form-floating">
+                    <InputText @bind-Value="Model.Fps" id="fps" class="form-control" />
+                    <label for="fps">FPS</label>
+                </div>
+            </div>
+            <div class="col-md">
+                <div class="form-floating">
+                    <InputText @bind-Value="Model.Cadence" id="cadence" class="form-control" />
+                    <label for="cadence">Cadence</label>
+                </div>
+            </div>
+            <div class="col-md">
+                <div class="form-floating">
+                    <InputText @bind-Value="Model.PromptInterval" id="prompt-interval" class="form-control" />
+                    <label for="prompt-interval">Prompt Interval (in seconds)</label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        @foreach (var track in Model.Tracks)
+        {
             <div class="row g-3">
-                <div class="col-md-3">
+                <div class="col-md-9">
                     <InputText @bind-Value="track.Name" class="form-control" placeholder="Track Name" />
-                </div>
-                <div class="col-md-3">
-                    <InputText @bind-Value="track.StartTime" class="form-control" placeholder="Track Time" />
-                </div>
-                <div class="col-md-3">
-                    <InputSelect @bind-Value="track.StartType" class="form-select">
-                        <option value="@TrackSectionType.NONE">-- Select --</option>
-                        <option value="@TrackSectionType.INTRO">INTRO</option>
-                        <option value="@TrackSectionType.CHORUS">CHORUS</option>
-                        <option value="@TrackSectionType.BUILDUP">BUILDUP</option>
-                        <option value="@TrackSectionType.BREAKDOWN">BREAKDOWN</option>
-                        <option value="@TrackSectionType.OUTRO">OUTRO</option>
-                    </InputSelect>
                 </div>
                 <div class="col-md-3">
                     <div class="btn-group" role="group">
@@ -58,11 +76,11 @@
                     <div class="col-md-3">
                         <InputSelect @bind-Value="section.Type" class="form-select">
                             <option value="@TrackSectionType.NONE">-- Select --</option>
-                            <option value="@TrackSectionType.INTRO">INTRO</option>
                             <option value="@TrackSectionType.CHORUS">CHORUS</option>
                             <option value="@TrackSectionType.BUILDUP">BUILDUP</option>
                             <option value="@TrackSectionType.BREAKDOWN">BREAKDOWN</option>
                             <option value="@TrackSectionType.OUTRO">OUTRO</option>
+                            <option value="@TrackSectionType.END">END</option>
                         </InputSelect>
                     </div>
                     <div class="col-md-3">
@@ -88,12 +106,15 @@
                     </div>
                 }
             </div>
-        </div>
+        }
     </div>
-}
+</div>
 
 @code {
-    public List<Track> Tracks { get; set; } = new List<Track>();
+    private EditContext? editContext;
+
+    [SupplyParameterFromForm]
+    private Mix Model { get; set; } = new();
 
     protected override void OnInitialized()
     {
@@ -101,32 +122,41 @@
         initialtrack.IsLast = true;
         initialtrack.Sections[0].IsLast = true;
 
-        Tracks = [initialtrack];
+        Model = new Mix
+        {
+            Tracks = [initialtrack]
+        };
+        editContext = new(Model);
+    }
+
+    private void Submit()
+    {
+        
     }
 
     private void OnTrackAddClick()
     {
-        Tracks.Add(CreateEmptyTrack(Tracks.Count + 1));
+        Model.Tracks.Add(CreateEmptyTrack(Model.Tracks.Count + 1));
         SetLastTrack();
     }
 
     private void OnTrackDeleteClick(Track deletedTrack)
     {
-        Tracks.Remove(deletedTrack);
+        Model.Tracks.Remove(deletedTrack);
         SetLastTrack();
     }
 
     private void SetLastTrack()
     {
-        for (var i = 0; i < Tracks.Count; i++)
+        for (var i = 0; i < Model.Tracks.Count; i++)
         {
-            if (i == Tracks.Count - 1)
+            if (i == Model.Tracks.Count - 1)
             {
-                Tracks[i].IsLast = true;
+                Model.Tracks[i].IsLast = true;
             }
             else
             {
-                Tracks[i].IsLast = false;
+                Model.Tracks[i].IsLast = false;
             }
         }
     }
@@ -139,8 +169,8 @@
 
     private void OnSectionDeleteClick(Track currentTrack, TrackSection deletedSection)
     {
-        var trackIndex = Tracks.FindIndex(t => t.Number == currentTrack.Number);
-        var track = Tracks[trackIndex];
+        var trackIndex = Model.Tracks.FindIndex(t => t.Number == currentTrack.Number);
+        var track = Model.Tracks[trackIndex];
 
         track.Sections.Remove(deletedSection);
         SetLastSection(track);
@@ -167,8 +197,6 @@
         {
             Number = number,
             Name = "",
-            StartTime = "",
-            StartType = TrackSectionType.NONE,
             Sections = new List<TrackSection>
             {
                 CreateEmptySection(1)
