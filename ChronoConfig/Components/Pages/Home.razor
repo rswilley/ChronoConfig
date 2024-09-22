@@ -5,9 +5,43 @@
 
 <h1>Mix</h1>
 
-@if (Model.ViewMode == ViewModes.Edit)
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item @(Model.ViewMode == ViewModes.Step1 ? "active": "")">
+            @if (Model.ViewMode > ViewModes.Step1)
+            {
+                <a href="#" @onclick="() => SetViewMode(ViewModes.Step1)" @onclick:preventDefault>Setup</a>
+            } else
+            {
+                <text>Setup</text>
+            }
+        </li>
+        <li class="breadcrumb-item @(Model.ViewMode == ViewModes.Step2 ? "active": "")">
+            @if (Model.ViewMode > ViewModes.Step2)
+            {
+                <a href="#" @onclick="() => SetViewMode(ViewModes.Step2)" @onclick:preventDefault>Preview</a>
+            }
+            else
+            {
+                <text>Preview</text>
+            }
+        </li>
+        <li class="breadcrumb-item @(Model.ViewMode == ViewModes.Step3 ? "active": "")">
+            @if (Model.ViewMode > ViewModes.Step3)
+            {
+                <a href="#" @onclick="() => SetViewMode(ViewModes.Step3)" @onclick:preventDefault>Output</a>
+            }
+            else
+            {
+                <text>Output</text>
+            }
+        </li>
+    </ol>
+</nav>
+
+@if (Model.ViewMode == ViewModes.Step1)
 {
-    <EditForm Model="Model" OnValidSubmit="Submit">
+    <EditForm Model="Model" OnValidSubmit="Step1Submit">
         <CustomValidation @ref="customValidation" />
         <ValidationSummary />
 
@@ -124,19 +158,62 @@
             </div>
 
             <div class="card-footer">
-                <button type="submit" class="btn btn-primary">Submit</button>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="submit" class="btn btn-primary">Next</button>
+                </div>
             </div>
         </div>
     </EditForm>
+} else if (Model.ViewMode == ViewModes.Step2)
+{
+    <div class="card">
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Frame</th>
+                        <th scope="col">Prompt</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var prompt in Model.Prompts)
+                    {
+                        <tr>
+                            <td>@prompt.FrameIndex</td>
+                            <td>
+                                <InputText @bind-Value="prompt.Value" class="form-control" />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card-footer">
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <button @onclick="() => Step2Submit()"  class="btn btn-primary me-md-2" type="button">Next</button>
+                <button @onclick="() => SetViewMode(Model.ViewMode - 1)" type="button" class="btn btn-secondary">Back</button>
+            </div>
+        </div>
+    </div>
 } else
 {
     <div class="card">
         <div class="card-body">
-            <InputTextArea @bind-Value="Model.PromptJson" style="width: 100%; height: 100%;"></InputTextArea>
+            <div class="mb-3">
+                <label for="total-frames" class="form-label">Total Frames</label>
+                <InputText @bind-Value="Model.Step3Model.TotalFrames" id="total-frames" class="form-control" />
+            </div>
+            <div class="mb-3">
+                <label for="output" class="form-label">Output</label>
+                <InputTextArea @bind-Value="Model.Step3Model.Output" id="output" class="form-control" style="width: 100%;" rows="8"></InputTextArea>
+            </div>
         </div>
 
         <div class="card-footer">
-            <button @onclick="OnBackButtonClick" type="submit" class="btn btn-secondary">Back</button>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <button @onclick="() => SetViewMode(Model.ViewMode - 1)" type="submit" class="btn btn-secondary">Back</button>
+            </div>
         </div>
     </div>
 }
@@ -159,7 +236,7 @@
         Model.Mix.PromptInterval = platformAdapter.GetPreference("prompt-interval");
     }
 
-    private void Submit()
+    private void Step1Submit()
     {
         customValidation?.ClearErrors();
 
@@ -176,14 +253,25 @@
             platformAdapter.SetPreference("prompt-interval", Model.Mix.PromptInterval);
 
             var config = new ConfigGenerator().Create(Model.Mix);
-            Model.SetPromptJson(config.Prompts);
-            Model.ViewMode = ViewModes.Preview;
+            Model.TotalFrames = config.TotalFrames.ToString();
+            Model.Prompts = config.Prompts.Select(p => new Prompt
+            {
+                FrameIndex = p.Key,
+                Value = p.Value
+            }).ToList();
+            Model.ViewMode = Model.ViewMode + 1;
         }
     }
 
-    private void OnBackButtonClick()
+    private void Step2Submit()
     {
-        Model.ViewMode = ViewModes.Edit;
+        Model.SetPromptJson(Model.Prompts.ToDictionary(p => p.FrameIndex, p => p.Value));
+        Model.ViewMode = Model.ViewMode + 1;
+    }
+
+    private void SetViewMode(ViewModes mode)
+    {
+        Model.ViewMode = mode;
     }
 
     private void OnTrackAddClick()

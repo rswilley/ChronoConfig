@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace ChronoConfigLib
 {
@@ -15,8 +14,10 @@ namespace ChronoConfigLib
         }
 
         public Mix Mix { get; set; } = new();
-        public ViewModes ViewMode { get; set; } = ViewModes.Edit;
-        public string PromptJson { get; set; } = string.Empty;
+        public ViewModes ViewMode { get; set; } = ViewModes.Step1;
+        public string TotalFrames { get; set; } = string.Empty;
+        public List<Prompt> Prompts { get; set; } = [];
+        public Step3Model Step3Model { get; set; } = new();
 
         public void AddTrack()
         {
@@ -148,7 +149,8 @@ namespace ChronoConfigLib
 
         public void SetPromptJson(Dictionary<string, string> prompts)
         {
-            PromptJson = JsonSerializer.Serialize(prompts, options: new JsonSerializerOptions
+            Step3Model.TotalFrames = TotalFrames;
+            Step3Model.Output = JsonSerializer.Serialize(prompts, options: new JsonSerializerOptions
             {
                 WriteIndented = true
             });
@@ -221,9 +223,16 @@ namespace ChronoConfigLib
         }
     }
 
+    public class Step3Model
+    {
+        public string TotalFrames { get; set; } = string.Empty;
+        public string Output { get; set; } = string.Empty;
+    }
+
     public enum ViewModes
     {
-        Edit,
-        Preview
+        Step1,
+        Step2,
+        Step3
     }
 }
