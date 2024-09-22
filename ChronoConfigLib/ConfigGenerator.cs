@@ -6,11 +6,13 @@ namespace ChronoConfigLib
     {
         public ConfigResult Create(Mix mix)
         {
+            var startingSection = mix.Tracks.Select(t => t.Sections.Single(s => s.Type == TrackSectionType.START)).Single();
             var endingSection = mix.Tracks.Select(t => t.Sections.Single(s => s.Type == TrackSectionType.END)).Single();
+            
             int totalSeconds = 0;
             if (endingSection != null)
             {
-                totalSeconds = (int)TimeSpan.Parse(endingSection.StartTime).TotalSeconds;
+                totalSeconds = (int)(TimeSpan.Parse(endingSection.StartTime) - TimeSpan.Parse(startingSection.StartTime)).TotalSeconds;
             }
 
             var fps = Convert.ToInt32(mix.Fps);
@@ -30,17 +32,29 @@ namespace ChronoConfigLib
         private Dictionary<string, string> GeneratePrompts(List<Track> tracks, int fps, int promptLengthInSeconds)
         {
             var prompts = new Dictionary<string, string>();
-            //var movementSchedule = new MovementSchedule();
+            var startTimeOffset = TimeSpan.Zero;
 
-            foreach (var track in tracks)
+            for (int trackIndex = 0;  trackIndex < tracks.Count; trackIndex++)
             {
-                for (int sectionIndex = 0; sectionIndex < track.Sections.Count - 1; sectionIndex++)
-                {
-                    var currentSection = track.Sections[sectionIndex];
-                    var currentSectionStartTime = TimeSpan.Parse(currentSection.StartTime);
-                    var currentSectionFrame = GetFrameFromTime(currentSectionStartTime, fps);
+                var trackNumber = trackIndex + 1;
 
-                    //HandleSectionType(currentSection, movementSchedule, currentSectionFrame, track.Frames, settings);
+                for (int sectionIndex = 0; sectionIndex < tracks[trackIndex].Sections.Count - 1; sectionIndex++)
+                {
+                    var sectionNumber = sectionIndex + 1;
+
+                    var currentSection = tracks[trackIndex].Sections[sectionIndex];
+                    var currentSectionStartTime = TimeSpan.Parse(currentSection.StartTime);
+
+                    if (trackNumber == 1 && sectionNumber == 1 && currentSectionStartTime != TimeSpan.Zero)
+                    {
+                        startTimeOffset = currentSectionStartTime;
+                        currentSectionStartTime = TimeSpan.Zero;
+                    } else
+                    {
+                        currentSectionStartTime -= startTimeOffset;
+                    }
+
+                    var currentSectionFrame = GetFrameFromTime(currentSectionStartTime, fps);
 
                     prompts.Add(currentSectionFrame.ToString(), GetPromptText(currentSection, false));
 

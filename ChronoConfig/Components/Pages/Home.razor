@@ -1,110 +1,72 @@
 ﻿@page "/"
 @using ChronoConfig.Validation
 @using ChronoConfigLib
+@inject IPlatformAdapter platformAdapter
 
 <h1>Mix</h1>
 
-<EditForm Model="Model" OnValidSubmit="Submit">
-    <CustomValidation @ref="customValidation" />
-    <ValidationSummary />
+@if (Model.ViewMode == ViewModes.Edit)
+{
+    <EditForm Model="Model" OnValidSubmit="Submit">
+        <CustomValidation @ref="customValidation" />
+        <ValidationSummary />
 
-    <div class="card">
-        <div class="card-body">
-            <div class="row g-2">
-                <div class="col-md">
-                    <div class="form-floating">
-                        <InputText @bind-Value="Model.Mix.Bpm" id="bpm" class="form-control" />
-                        <label for="bpm">BPM</label>
+        <div class="card">
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-md">
+                        <div class="form-floating">
+                            <InputText @bind-Value="Model.Mix.Bpm" id="bpm" class="form-control" />
+                            <label for="bpm">BPM</label>
+                        </div>
                     </div>
-                </div>
-                <div class="col-md">
-                    <div class="form-floating">
-                        <InputText @bind-Value="Model.Mix.Fps" id="fps" class="form-control" />
-                        <label for="fps">FPS</label>
+                    <div class="col-md">
+                        <div class="form-floating">
+                            <InputText @bind-Value="Model.Mix.Fps" id="fps" class="form-control" />
+                            <label for="fps">FPS</label>
+                        </div>
                     </div>
-                </div>
-                <div class="col-md">
-                    <div class="form-floating">
-                        <InputText @bind-Value="Model.Mix.Cadence" id="cadence" class="form-control" />
-                        <label for="cadence">Cadence</label>
+                    <div class="col-md">
+                        <div class="form-floating">
+                            <InputText @bind-Value="Model.Mix.Cadence" id="cadence" class="form-control" />
+                            <label for="cadence">Cadence</label>
+                        </div>
                     </div>
-                </div>
-                <div class="col-md">
-                    <div class="form-floating">
-                        <InputText @bind-Value="Model.Mix.PromptInterval" id="prompt-interval" class="form-control" />
-                        <label for="prompt-interval">Prompt Interval (in seconds)</label>
+                    <div class="col-md">
+                        <div class="form-floating">
+                            <InputText @bind-Value="Model.Mix.PromptInterval" id="prompt-interval" class="form-control" />
+                            <label for="prompt-interval">Prompt Interval (in seconds)</label>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="card">
-        <div class="card-body">
-            @foreach (var track in Model.Mix.Tracks)
-            {
-                <div class="row">
-                    <h6>Track @track.Number</h6>
-                </div>
-                <div class="row g-3">
-                    <div class="col-md-9">
-                        <InputText @bind-Value="track.Name" class="form-control" placeholder="Track Name" />
+        <div class="card">
+            <div class="card-body">
+                @foreach (var track in Model.Mix.Tracks)
+                {
+                    <div class="row">
+                        <h6>Track @track.Number</h6>
                     </div>
-                    <div class="col-md-3">
-                        <div class="btn-group" role="group">
-                            @if (track.IsLast)
-                            {
-                                <button @onclick="() => OnTrackAddClick()" type="button" class="btn btn-success">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
-                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
-                                    </svg>
-                                </button>
-                            }
-                            @if (track.IsLast && track.Number != 1)
-                            {
-                                <button @onclick="() => OnTrackDeleteClick(track)" type="button" class="btn btn-danger">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
-                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708" />
-                                    </svg>
-                                </button>
-                            }
-                        </div>
-                    </div>
-
-                    @foreach (var section in track.Sections)
-                    {
-                        <div class="col-md-3">
-                            <InputText @bind-Value="section.Comment" class="form-control" placeholder="Comment" />
-                        </div>
-                        <div class="col-md-3">
-                            <InputText @bind-Value="section.StartTime" @onchange="(args) => OnSectionTimeChanged(track, section, args)" class="form-control" placeholder="Section Time" />
-                        </div>
-                        <div class="col-md-3">
-                            <InputSelect @bind-Value="section.Type" class="form-select">
-                                <option value="@TrackSectionType.NONE">-- Select --</option>
-                                <option value="@TrackSectionType.START">START</option>
-                                <option value="@TrackSectionType.CHORUS">CHORUS</option>
-                                <option value="@TrackSectionType.BUILDUP">BUILDUP</option>
-                                <option value="@TrackSectionType.BREAKDOWN">BREAKDOWN</option>
-                                <option value="@TrackSectionType.OUTRO">OUTRO</option>
-                                <option value="@TrackSectionType.END">END</option>
-                            </InputSelect>
+                    <div class="row g-3">
+                        <div class="col-md-9">
+                            <InputText @bind-Value="track.Name" class="form-control" placeholder="Track Name" />
                         </div>
                         <div class="col-md-3">
                             <div class="btn-group" role="group">
-                                @if (section.IsLast)
+                                @if (track.IsLast)
                                 {
-                                    <button @onclick="() => OnSectionAddClick(track)" type="button" class="btn btn-secondary">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle-dotted" viewBox="0 0 16 16">
-                                            <path d="M8 0q-.264 0-.523.017l.064.998a7 7 0 0 1 .918 0l.064-.998A8 8 0 0 0 8 0M6.44.152q-.52.104-1.012.27l.321.948q.43-.147.884-.237L6.44.153zm4.132.271a8 8 0 0 0-1.011-.27l-.194.98q.453.09.884.237zm1.873.925a8 8 0 0 0-.906-.524l-.443.896q.413.205.793.459zM4.46.824q-.471.233-.905.524l.556.83a7 7 0 0 1 .793-.458zM2.725 1.985q-.394.346-.74.74l.752.66q.303-.345.648-.648zm11.29.74a8 8 0 0 0-.74-.74l-.66.752q.346.303.648.648zm1.161 1.735a8 8 0 0 0-.524-.905l-.83.556q.254.38.458.793l.896-.443zM1.348 3.555q-.292.433-.524.906l.896.443q.205-.413.459-.793zM.423 5.428a8 8 0 0 0-.27 1.011l.98.194q.09-.453.237-.884zM15.848 6.44a8 8 0 0 0-.27-1.012l-.948.321q.147.43.237.884zM.017 7.477a8 8 0 0 0 0 1.046l.998-.064a7 7 0 0 1 0-.918zM16 8a8 8 0 0 0-.017-.523l-.998.064a7 7 0 0 1 0 .918l.998.064A8 8 0 0 0 16 8M.152 9.56q.104.52.27 1.012l.948-.321a7 7 0 0 1-.237-.884l-.98.194zm15.425 1.012q.168-.493.27-1.011l-.98-.194q-.09.453-.237.884zM.824 11.54a8 8 0 0 0 .524.905l.83-.556a7 7 0 0 1-.458-.793zm13.828.905q.292-.434.524-.906l-.896-.443q-.205.413-.459.793zm-12.667.83q.346.394.74.74l.66-.752a7 7 0 0 1-.648-.648zm11.29.74q.394-.346.74-.74l-.752-.66q-.302.346-.648.648zm-1.735 1.161q.471-.233.905-.524l-.556-.83a7 7 0 0 1-.793.458zm-7.985-.524q.434.292.906.524l.443-.896a7 7 0 0 1-.793-.459zm1.873.925q.493.168 1.011.27l.194-.98a7 7 0 0 1-.884-.237zm4.132.271a8 8 0 0 0 1.012-.27l-.321-.948a7 7 0 0 1-.884.237l.194.98zm-2.083.135a8 8 0 0 0 1.046 0l-.064-.998a7 7 0 0 1-.918 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3z" />
+                                    <button @onclick="() => OnTrackAddClick()" type="button" class="btn btn-success">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
                                         </svg>
                                     </button>
                                 }
-                                @if (section.IsLast && section.Number != 1)
+                                @if (track.IsLast && track.Number != 1)
                                 {
-                                    <button @onclick="() => OnSectionDeleteClick(track, section)" type="button" class="btn btn-danger">
+                                    <button @onclick="() => OnTrackDeleteClick(track)" type="button" class="btn btn-danger">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
                                             <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
                                             <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708" />
@@ -113,18 +75,71 @@
                                 }
                             </div>
                         </div>
-                    }
-                </div>
 
-                <div class="row">&nbsp;</div>
-            }
+                        @foreach (var section in track.Sections)
+                        {
+                            <div class="col-md-3">
+                                <InputText @bind-Value="section.Comment" class="form-control" placeholder="Comment" />
+                            </div>
+                            <div class="col-md-3">
+                                <InputText @bind-Value="section.StartTime" @onchange="(args) => OnSectionTimeChanged(track, section, args)" class="form-control" placeholder="Section Time" />
+                            </div>
+                            <div class="col-md-3">
+                                <InputSelect @bind-Value="section.Type" class="form-select">
+                                    <option value="@TrackSectionType.NONE">-- Select --</option>
+                                    <option value="@TrackSectionType.START">START</option>
+                                    <option value="@TrackSectionType.CHORUS">CHORUS</option>
+                                    <option value="@TrackSectionType.BUILDUP">BUILDUP</option>
+                                    <option value="@TrackSectionType.BREAKDOWN">BREAKDOWN</option>
+                                    <option value="@TrackSectionType.OUTRO">OUTRO</option>
+                                    <option value="@TrackSectionType.END">END</option>
+                                </InputSelect>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="btn-group" role="group">
+                                    @if (section.IsLast)
+                                    {
+                                        <button @onclick="() => OnSectionAddClick(track)" type="button" class="btn btn-secondary">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle-dotted" viewBox="0 0 16 16">
+                                                <path d="M8 0q-.264 0-.523.017l.064.998a7 7 0 0 1 .918 0l.064-.998A8 8 0 0 0 8 0M6.44.152q-.52.104-1.012.27l.321.948q.43-.147.884-.237L6.44.153zm4.132.271a8 8 0 0 0-1.011-.27l-.194.98q.453.09.884.237zm1.873.925a8 8 0 0 0-.906-.524l-.443.896q.413.205.793.459zM4.46.824q-.471.233-.905.524l.556.83a7 7 0 0 1 .793-.458zM2.725 1.985q-.394.346-.74.74l.752.66q.303-.345.648-.648zm11.29.74a8 8 0 0 0-.74-.74l-.66.752q.346.303.648.648zm1.161 1.735a8 8 0 0 0-.524-.905l-.83.556q.254.38.458.793l.896-.443zM1.348 3.555q-.292.433-.524.906l.896.443q.205-.413.459-.793zM.423 5.428a8 8 0 0 0-.27 1.011l.98.194q.09-.453.237-.884zM15.848 6.44a8 8 0 0 0-.27-1.012l-.948.321q.147.43.237.884zM.017 7.477a8 8 0 0 0 0 1.046l.998-.064a7 7 0 0 1 0-.918zM16 8a8 8 0 0 0-.017-.523l-.998.064a7 7 0 0 1 0 .918l.998.064A8 8 0 0 0 16 8M.152 9.56q.104.52.27 1.012l.948-.321a7 7 0 0 1-.237-.884l-.98.194zm15.425 1.012q.168-.493.27-1.011l-.98-.194q-.09.453-.237.884zM.824 11.54a8 8 0 0 0 .524.905l.83-.556a7 7 0 0 1-.458-.793zm13.828.905q.292-.434.524-.906l-.896-.443q-.205.413-.459.793zm-12.667.83q.346.394.74.74l.66-.752a7 7 0 0 1-.648-.648zm11.29.74q.394-.346.74-.74l-.752-.66q-.302.346-.648.648zm-1.735 1.161q.471-.233.905-.524l-.556-.83a7 7 0 0 1-.793.458zm-7.985-.524q.434.292.906.524l.443-.896a7 7 0 0 1-.793-.459zm1.873.925q.493.168 1.011.27l.194-.98a7 7 0 0 1-.884-.237zm4.132.271a8 8 0 0 0 1.012-.27l-.321-.948a7 7 0 0 1-.884.237l.194.98zm-2.083.135a8 8 0 0 0 1.046 0l-.064-.998a7 7 0 0 1-.918 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3z" />
+                                            </svg>
+                                        </button>
+                                    }
+                                    @if (section.IsLast && section.Number != 1)
+                                    {
+                                        <button @onclick="() => OnSectionDeleteClick(track, section)" type="button" class="btn btn-danger">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
+                                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                                                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708" />
+                                            </svg>
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="row">&nbsp;</div>
+                }
+            </div>
+
+            <div class="card-footer">
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+        </div>
+    </EditForm>
+} else
+{
+    <div class="card">
+        <div class="card-body">
+            <InputTextArea @bind-Value="Model.PromptJson" style="width: 100%; height: 100%;"></InputTextArea>
+        </div>
+
+        <div class="card-footer">
+            <button @onclick="OnBackButtonClick" type="submit" class="btn btn-secondary">Back</button>
         </div>
     </div>
-
-    <div>
-        <button type="submit">Submit</button>
-    </div>
-</EditForm>
+}
 
 @code {
     private CustomValidation? customValidation;
@@ -137,6 +152,11 @@
     {
         Model = new MainViewModel();
         editContext = new(Model);
+
+        Model.Mix.Bpm = platformAdapter.GetPreference("bpm");
+        Model.Mix.Fps = platformAdapter.GetPreference("fps");
+        Model.Mix.Cadence = platformAdapter.GetPreference("cadence");
+        Model.Mix.PromptInterval = platformAdapter.GetPreference("prompt-interval");
     }
 
     private void Submit()
@@ -150,8 +170,20 @@
         }
         else
         {
-            //TODO
+            platformAdapter.SetPreference("bpm", Model.Mix.Bpm);
+            platformAdapter.SetPreference("fps", Model.Mix.Fps);
+            platformAdapter.SetPreference("cadence", Model.Mix.Cadence);
+            platformAdapter.SetPreference("prompt-interval", Model.Mix.PromptInterval);
+
+            var config = new ConfigGenerator().Create(Model.Mix);
+            Model.SetPromptJson(config.Prompts);
+            Model.ViewMode = ViewModes.Preview;
         }
+    }
+
+    private void OnBackButtonClick()
+    {
+        Model.ViewMode = ViewModes.Edit;
     }
 
     private void OnTrackAddClick()

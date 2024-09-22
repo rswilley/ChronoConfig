@@ -2,16 +2,18 @@
 
 namespace ChronoConfig
 {
-    public interface IDialogService
+    public interface IPlatformAdapter
     {
         Task<string> PickFolder();
+        string GetPreference(string key);
+        void SetPreference(string key, string value);
     }
 
-    public class DialogService : IDialogService
+    public class PlatformAdapter : IPlatformAdapter
     {
         private readonly IFolderPicker _folderPicker;
 
-        public DialogService(IFolderPicker folderPicker)
+        public PlatformAdapter(IFolderPicker folderPicker)
         {
             _folderPicker = folderPicker;
         }
@@ -25,6 +27,16 @@ namespace ChronoConfig
             }
 
             return string.Empty;
+        }
+
+        public string GetPreference(string key)
+        {
+            return Preferences.Default.Get(key, "");
+        }
+
+        public void SetPreference(string key, string value)
+        {
+            Preferences.Default.Set(key, value);
         }
     }
 }

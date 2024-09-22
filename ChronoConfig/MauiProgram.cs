@@ -19,7 +19,7 @@ namespace ChronoConfig
 
             builder.Services.AddMauiBlazorWebView();
             builder.Services.AddSingleton<IFolderPicker>(FolderPicker.Default);
-            builder.Services.AddSingleton<IDialogService, DialogService>();
+            builder.Services.AddSingleton<IPlatformAdapter, PlatformAdapter>();
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();

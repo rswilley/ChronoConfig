@@ -52,6 +52,46 @@ namespace ChronoConfigLibTests
             Assert.Equal(902, result.TotalFrames);
         }
 
+        [Fact]
+        public void Create_TrackStartIsNotZero_ReturnsCorrectPrompts()
+        {
+            var subject = GetSubject();
+            var result = subject.Create(new Mix
+            {
+                Bpm = "128",
+                Fps = "15",
+                Cadence = "4",
+                PromptInterval = "30",
+                Tracks =
+                [
+                    new() {
+                        Sections = [
+                            new() {
+                                StartTime = "00:02:00",
+                                Comment = "Comment",
+                                Type = TrackSectionType.START
+                                },
+                            new() {
+                                StartTime = "00:02:30",
+                                Type = TrackSectionType.CHORUS
+                                },
+                                new() {
+                                StartTime = "00:03:00",
+                                Type = TrackSectionType.END
+                                }
+                            ]
+                        }
+                ]
+            });
+
+            Assert.True(result.Prompts.Count == 2);
+            Assert.Equal("0", result.Prompts.ElementAt(0).Key);
+            Assert.Equal("START [Comment]", result.Prompts.ElementAt(0).Value);
+            Assert.Equal("450", result.Prompts.ElementAt(1).Key);
+            Assert.Equal("CHORUS", result.Prompts.ElementAt(1).Value);
+            Assert.Equal(902, result.TotalFrames);
+        }
+
         private static ConfigGenerator GetSubject() => new();
     }
 }

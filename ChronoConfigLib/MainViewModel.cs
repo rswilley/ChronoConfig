@@ -1,4 +1,7 @@
-﻿namespace ChronoConfigLib
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace ChronoConfigLib
 {
     public class MainViewModel
     {
@@ -12,6 +15,8 @@
         }
 
         public Mix Mix { get; set; } = new();
+        public ViewModes ViewMode { get; set; } = ViewModes.Edit;
+        public string PromptJson { get; set; } = string.Empty;
 
         public void AddTrack()
         {
@@ -141,6 +146,14 @@
             return errors;
         }
 
+        public void SetPromptJson(Dictionary<string, string> prompts)
+        {
+            PromptJson = JsonSerializer.Serialize(prompts, options: new JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
+        }
+
         private static void ValidateIsNumber(string errorKey, string value, Dictionary<string, string> errors)
         {
             if (string.IsNullOrEmpty(value))
@@ -206,5 +219,11 @@
                 Type = TrackSectionType.START
             };
         }
+    }
+
+    public enum ViewModes
+    {
+        Edit,
+        Preview
     }
 }
