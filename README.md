@@ -1,4 +1,4 @@
-Configuration for audioreactivity in Deforum
+Convert timestamps of song sections into frames to be used in Deforum AI animation.
 
 ## Step 1 - Setup Mix
 
