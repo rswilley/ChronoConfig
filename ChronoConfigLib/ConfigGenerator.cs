@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 
 namespace ChronoConfigLib
 {
@@ -8,6 +9,7 @@ namespace ChronoConfigLib
         {
             var startingSection = mix.Tracks.Select(t => t.Sections.Single(s => s.Type == TrackSectionType.START)).Single();
             var endingSection = mix.Tracks.Select(t => t.Sections.Single(s => s.Type == TrackSectionType.END)).Single();
+            var sectionCount = mix.Tracks.SelectMany(t => t.Sections).Count();
             
             int totalSeconds = 0;
             if (endingSection != null)
@@ -19,7 +21,15 @@ namespace ChronoConfigLib
             var promptLengthInSeconds = Convert.ToInt32(mix.PromptInterval);
             var cadence = Convert.ToInt32(mix.Cadence);
 
-            var prompts = GeneratePrompts(mix.Tracks, fps, promptLengthInSeconds);
+            Dictionary<string, string> prompts;
+            if (sectionCount == 2)
+            {
+                prompts = GeneratePromptsByLength(startingSection, endingSection!, fps, promptLengthInSeconds);
+            } else
+            {
+                prompts = GeneratePromptsBySection(mix.Tracks, fps, promptLengthInSeconds);
+            }
+
             var totalFrames = (totalSeconds * fps) + (cadence / 2);
 
             return new ConfigResult
@@ -29,7 +39,25 @@ namespace ChronoConfigLib
             };
         }
 
-        private Dictionary<string, string> GeneratePrompts(List<Track> tracks, int fps, int promptLengthInSeconds)
+        private Dictionary<string, string> GeneratePromptsByLength(TrackSection starting, TrackSection ending, int fps, int promptLengthInSeconds)
+        {
+            var prompts = new Dictionary<string, string>();
+            var startTime = TimeSpan.Parse(starting.StartTime);
+            var endTime = TimeSpan.Parse(ending.StartTime);
+
+            var totalLengthInSeconds = (int)(endTime - startTime).TotalSeconds;
+            var sectionCount = totalLengthInSeconds / promptLengthInSeconds;
+
+            for (int sectionIndex = 0; sectionIndex < sectionCount; sectionIndex++)
+            {
+                var frameIndex = sectionIndex * 30 * fps;
+                prompts.Add(frameIndex.ToString(), "");
+            }
+
+            return prompts;
+        }
+
+        private Dictionary<string, string> GeneratePromptsBySection(List<Track> tracks, int fps, int promptLengthInSeconds)
         {
             var prompts = new Dictionary<string, string>();
             var startTimeOffset = TimeSpan.Zero;
@@ -55,22 +83,7 @@ namespace ChronoConfigLib
                     }
 
                     var currentSectionFrame = GetFrameFromTime(currentSectionStartTime, fps);
-
                     prompts.Add(currentSectionFrame.ToString(), GetPromptText(currentSection, false));
-
-                    if (currentSectionStartTime.TotalSeconds > promptLengthInSeconds)
-                    {
-                        var remainingSeconds = currentSectionStartTime.TotalSeconds - promptLengthInSeconds;
-                        var frameIteration = currentSectionFrame;
-                        while (remainingSeconds > 0)
-                        {
-                            var subFrameIndex = frameIteration +
-                                                GetFrameFromTime(new TimeSpan(0, 0, promptLengthInSeconds), fps);
-                            prompts.Add(subFrameIndex.ToString(), GetPromptText(currentSection, true));
-                            remainingSeconds -= promptLengthInSeconds;
-                            frameIteration = subFrameIndex;
-                        }
-                    }
                 }
             }
 

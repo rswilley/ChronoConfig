@@ -33,7 +33,8 @@ namespace ChronoConfigLib
 
         public void AddSection(Track currentTrack)
         {
-            currentTrack.Sections.Add(CreateEmptySection(currentTrack.Sections.Count + 1));
+            var currentSection = currentTrack.Sections[currentTrack.Sections.Count - 1];
+            currentTrack.Sections.Add(CreateEmptySection(currentTrack.Sections.Count + 1, currentSection.StartTime));
             SetLastSection(currentTrack);
         }
 
@@ -206,18 +207,18 @@ namespace ChronoConfigLib
                 Name = "",
                 Sections =
             [
-                CreateEmptySection(1)
+                CreateEmptySection(1, "00:00:00")
             ]
             };
         }
 
-        private static TrackSection CreateEmptySection(int number)
+        private static TrackSection CreateEmptySection(int number, string startTime)
         {
             return new TrackSection
             {
                 Number = number,
                 Comment = "",
-                StartTime = "00:00:00",
+                StartTime = startTime,
                 Type = TrackSectionType.START
             };
         }
