@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using ChronoConfigLib.Extensions;
+using System.Text.Json;
 
 namespace ChronoConfigLib
 {
@@ -17,6 +18,7 @@ namespace ChronoConfigLib
         public ViewModes ViewMode { get; set; } = ViewModes.Step1;
         public string TotalFrames { get; set; } = string.Empty;
         public List<Prompt> Prompts { get; set; } = [];
+        public MovementSchedule? MovementSchedule { get; set; }
         public Step3Model Step3Model { get; set; } = new();
 
         public void AddTrack()
@@ -151,10 +153,19 @@ namespace ChronoConfigLib
         public void SetPromptJson(Dictionary<string, string> prompts)
         {
             Step3Model.TotalFrames = TotalFrames;
-            Step3Model.Output = JsonSerializer.Serialize(prompts, options: new JsonSerializerOptions
+            Step3Model.PromptsJson = JsonSerializer.Serialize(prompts, options: new JsonSerializerOptions
             {
                 WriteIndented = true
             });
+
+            if (MovementSchedule != null)
+            {
+                Step3Model.StrengthSchedule = MovementSchedule.StrengthSchedule.ToSchedule();
+                Step3Model.TranslationZ = MovementSchedule.TranslationZ.ToSchedule();
+                Step3Model.Rotation3DX = MovementSchedule.Rotation3DX.ToSchedule();
+                Step3Model.Rotation3DY = MovementSchedule.Rotation3DY.ToSchedule();
+                Step3Model.Rotation3DZ = MovementSchedule.Rotation3DZ.ToSchedule();
+            }
         }
 
         private static void ValidateIsNumber(string errorKey, string value, Dictionary<string, string> errors)
@@ -227,7 +238,12 @@ namespace ChronoConfigLib
     public class Step3Model
     {
         public string TotalFrames { get; set; } = string.Empty;
-        public string Output { get; set; } = string.Empty;
+        public string PromptsJson { get; set; } = string.Empty;
+        public string StrengthSchedule { get; set; } = string.Empty;
+        public string TranslationZ { get; set; } = string.Empty;
+        public string Rotation3DX { get; set; } = string.Empty;
+        public string Rotation3DY { get; set; } = string.Empty;
+        public string Rotation3DZ { get; set; } = string.Empty;
     }
 
     public enum ViewModes

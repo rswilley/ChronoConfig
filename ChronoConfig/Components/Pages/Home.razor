@@ -205,8 +205,28 @@
                 <InputText @bind-Value="Model.Step3Model.TotalFrames" id="total-frames" class="form-control" />
             </div>
             <div class="mb-3">
-                <label for="output" class="form-label">Output</label>
-                <InputTextArea @bind-Value="Model.Step3Model.Output" id="output" class="form-control" style="width: 100%;" rows="8"></InputTextArea>
+                <label for="output" class="form-label">Prompts</label>
+                <InputTextArea @bind-Value="Model.Step3Model.PromptsJson" id="output" class="form-control" style="width: 100%;" rows="8"></InputTextArea>
+            </div>
+            <div class="mb-3">
+                <label for="strength" class="form-label">Strength Schedule</label>
+                <InputTextArea @bind-Value="Model.Step3Model.StrengthSchedule" id="strength" class="form-control" style="width: 100%;" rows="8"></InputTextArea>
+            </div>
+            <div class="mb-3">
+                <label for="translation-z" class="form-label">Translation Z</label>
+                <InputTextArea @bind-Value="Model.Step3Model.TranslationZ" id="translation-z" class="form-control" style="width: 100%;" rows="8"></InputTextArea>
+            </div>
+            <div class="mb-3">
+                <label for="rotation-3dx" class="form-label">Rotation 3D X</label>
+                <InputTextArea @bind-Value="Model.Step3Model.Rotation3DX" id="rotation-3dx" class="form-control" style="width: 100%;" rows="8"></InputTextArea>
+            </div>
+            <div class="mb-3">
+                <label for="rotation-3dy" class="form-label">Rotation 3D Y</label>
+                <InputTextArea @bind-Value="Model.Step3Model.Rotation3DY" id="rotation-3dy" class="form-control" style="width: 100%;" rows="8"></InputTextArea>
+            </div>
+            <div class="mb-3">
+                <label for="rotation-3dz" class="form-label">Rotation 3D Z</label>
+                <InputTextArea @bind-Value="Model.Step3Model.Rotation3DZ" id="rotation-3dz" class="form-control" style="width: 100%;" rows="8"></InputTextArea>
             </div>
         </div>
 
@@ -259,6 +279,8 @@
                 FrameIndex = p.Key,
                 Value = p.Value
             }).ToList();
+            Model.MovementSchedule = config.MovementSchedule;
+
             Model.ViewMode = Model.ViewMode + 1;
         }
     }
