@@ -12,9 +12,8 @@ namespace ChronoConfigLib
             PromptInterval = "", 
             VideoLength = "00:00:00"
         };
-        public string TotalFrames { get; set; } = string.Empty;
-        public List<Segment> Prompts { get; set; } = [];
-        public Step3Model Step3Model { get; set; } = new();
+        public Step2Model? Step2Model { get; set; }
+        public Step3Model? Step3Model { get; set; }
 
         public Dictionary<string, string> Validate()
         {
@@ -27,15 +26,6 @@ namespace ChronoConfigLib
             ValidateIsTimeSpan(nameof(Configuration.VideoLength), Configuration.VideoLength, errors);
 
             return errors;
-        }
-
-        public void SetPromptJson(Dictionary<string, string> prompts)
-        {
-            Step3Model.TotalFrames = TotalFrames;
-            Step3Model.PromptsJson = JsonSerializer.Serialize(prompts, options: new JsonSerializerOptions
-            {
-                WriteIndented = true
-            });
         }
 
         private static void ValidateIsNumber(string errorKey, string value, Dictionary<string, string> errors)
@@ -63,8 +53,27 @@ namespace ChronoConfigLib
         }
     }
 
+    public class Step2Model
+    {
+        public Step2Model(Configuration config)
+        {
+            Keyframes = KeyframesGenerator.GetKeyframes(config).ToList();
+        }
+
+        public List<Keyframe> Keyframes { get; set; } = [];
+    }
+
     public class Step3Model
     {
+        public Step3Model(Configuration config, Dictionary<string, string> prompts)
+        {
+            TotalFrames = KeyframesGenerator.GetTotalFrames(config).ToString();
+            PromptsJson = JsonSerializer.Serialize(prompts, options: new JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
+        }
+
         public string TotalFrames { get; set; } = string.Empty;
         public string PromptsJson { get; set; } = string.Empty;
         public string StrengthSchedule { get; set; } = string.Empty;

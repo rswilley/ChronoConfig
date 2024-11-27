@@ -2,13 +2,13 @@ using ChronoConfigLib;
 
 namespace ChronoConfigLibTests
 {
-    public class SegmentGeneratorTests
+    public class KeyframesGeneratorTests
     {
         [Fact]
         public void Create_ByDefault_ReturnsCorrectPrompts()
         {
-            var subject = GetSubject();
-            var result = subject.Create(new Configuration
+            //var subject = GetSubject();
+            var results = KeyframesGenerator.GetKeyframes(new Configuration
             {
                 Bpm = "128",
                 Fps = "15",
@@ -17,9 +17,9 @@ namespace ChronoConfigLibTests
                 VideoLength = "00:01:00"
             });
 
-            Assert.True(result.Segments.Count() == 4);
+            Assert.True(results.Count() == 4);
         }
 
-        private static SegmentGenerator GetSubject() => new();
+        //private static KeyframesGenerator GetSubject() => new();
     }
 }

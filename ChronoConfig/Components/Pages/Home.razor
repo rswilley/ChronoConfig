@@ -106,28 +106,28 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var prompt in Model.Prompts)
+                    @foreach (var keyframe in Model.Step2Model!.Keyframes)
                     {
                         <tr>
-                            <td>@prompt.Time</td>
-                            <td>@prompt.FrameIndex</td>
+                            <td>@keyframe.Time</td>
+                            <td>@keyframe.FrameIndex</td>
                             <td>
-                                <InputText @bind-Value="prompt.Strength" class="form-control" />
+                                <InputText @bind-Value="keyframe.Strength" class="form-control" />
                             </td>
                             <td>
-                                <InputText @bind-Value="prompt.Zoom" class="form-control" />
+                                <InputText @bind-Value="keyframe.Zoom" class="form-control" />
                             </td>
                             <td>
-                                <InputText @bind-Value="prompt.X" class="form-control" />
+                                <InputText @bind-Value="keyframe.X" class="form-control" />
                             </td>
                             <td>
-                                <InputText @bind-Value="prompt.Y" class="form-control" />
+                                <InputText @bind-Value="keyframe.Y" class="form-control" />
                             </td>
                             <td>
-                                <InputText @bind-Value="prompt.Z" class="form-control" />
+                                <InputText @bind-Value="keyframe.Z" class="form-control" />
                             </td>
                             <td>
-                                <InputText @bind-Value="prompt.Prompt" class="form-control" />
+                                <InputText @bind-Value="keyframe.Prompt" class="form-control" />
                             </td>
                         </tr>
                     }
@@ -148,7 +148,7 @@
         <div class="card-body">
             <div class="mb-3">
                 <label for="total-frames" class="form-label">Total Frames</label>
-                <InputText @bind-Value="Model.Step3Model.TotalFrames" id="total-frames" class="form-control" />
+                <InputText @bind-Value="Model.Step3Model!.TotalFrames" id="total-frames" class="form-control" />
             </div>
             <div class="mb-3">
                 <label for="output" class="form-label">Prompts</label>
@@ -220,17 +220,14 @@
             platformAdapter.SetPreference("prompt-interval", Model.Configuration.PromptInterval);
             platformAdapter.SetPreference("video-length", Model.Configuration.VideoLength);
 
-            var config = new SegmentGenerator().Create(Model.Configuration);
-            Model.TotalFrames = config.TotalFrames.ToString();
-            Model.Prompts = config.Segments.ToList();
-
+            Model.Step2Model = new Step2Model(Model.Configuration);
             Model.ViewMode = Model.ViewMode + 1;
         }
     }
 
     private void Step2Submit()
     {
-        Model.SetPromptJson(Model.Prompts.ToDictionary(p => p.FrameIndex, p => p.Prompt));
+        Model.Step3Model = new Step3Model(Model.Configuration, Model.Step2Model!.Keyframes.ToDictionary(p => p.FrameIndex, p => p.Prompt));
         Model.ViewMode = Model.ViewMode + 1;
     }
 
