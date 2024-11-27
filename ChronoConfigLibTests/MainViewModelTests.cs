@@ -8,7 +8,14 @@ namespace ChronoConfigLibTests
         public void Validate_HasNoBpm_ReturnsError()
         {
             var subject = GetSubject();
-            subject.Mix = new Mix();
+            subject.Configuration = new Configuration 
+            { 
+                Bpm = "", 
+                Cadence = "4", 
+                Fps = "15", 
+                PromptInterval = "30", 
+                VideoLength = "00:01:00"
+            };
 
             var errors = subject.Validate();
 
@@ -19,9 +26,13 @@ namespace ChronoConfigLibTests
         public void Validate_BpmIsNotANumber_ReturnsError()
         {
             var subject = GetSubject();
-            subject.Mix = new Mix
+            subject.Configuration = new Configuration
             {
-                Bpm = "abc"
+                Bpm = "abc",
+                Cadence = "4",
+                Fps = "15",
+                PromptInterval = "30",
+                VideoLength = "00:01:00"
             };
 
             var errors = subject.Validate();
@@ -33,7 +44,14 @@ namespace ChronoConfigLibTests
         public void Validate_HasNoFps_ReturnsError()
         {
             var subject = GetSubject();
-            subject.Mix = new Mix();
+            subject.Configuration = new Configuration
+            {
+                Bpm = "128",
+                Cadence = "4",
+                Fps = "",
+                PromptInterval = "30",
+                VideoLength = "00:01:00"
+            };
 
             var errors = subject.Validate();
 
@@ -44,9 +62,13 @@ namespace ChronoConfigLibTests
         public void Validate_FpsIsNotANumber_ReturnsError()
         {
             var subject = GetSubject();
-            subject.Mix = new Mix
+            subject.Configuration = new Configuration
             {
-                Fps = "abc"
+                Bpm = "128",
+                Cadence = "4",
+                Fps = "abc",
+                PromptInterval = "30",
+                VideoLength = "00:01:00"
             };
 
             var errors = subject.Validate();
@@ -58,7 +80,14 @@ namespace ChronoConfigLibTests
         public void Validate_HasNoCadence_ReturnsError()
         {
             var subject = GetSubject();
-            subject.Mix = new Mix();
+            subject.Configuration = new Configuration
+            {
+                Bpm = "128",
+                Cadence = "0",
+                Fps = "15",
+                PromptInterval = "30",
+                VideoLength = "00:01:00"
+            };
 
             var errors = subject.Validate();
 
@@ -69,9 +98,13 @@ namespace ChronoConfigLibTests
         public void Validate_CadenceIsNotANumber_ReturnsError()
         {
             var subject = GetSubject();
-            subject.Mix = new Mix
+            subject.Configuration = new Configuration
             {
-                Cadence = "abc"
+                Bpm = "128",
+                Cadence = "abc",
+                Fps = "15",
+                PromptInterval = "30",
+                VideoLength = "00:01:00"
             };
 
             var errors = subject.Validate();
@@ -83,7 +116,14 @@ namespace ChronoConfigLibTests
         public void Validate_HasNoPromptInterval_ReturnsError()
         {
             var subject = GetSubject();
-            subject.Mix = new Mix();
+            subject.Configuration = new Configuration
+            {
+                Bpm = "128",
+                Cadence = "4",
+                Fps = "15",
+                PromptInterval = "",
+                VideoLength = "00:01:00"
+            };
 
             var errors = subject.Validate();
 
@@ -94,9 +134,13 @@ namespace ChronoConfigLibTests
         public void Validate_PromptIntervalIsNotANumber_ReturnsError()
         {
             var subject = GetSubject();
-            subject.Mix = new Mix
+            subject.Configuration = new Configuration
             {
-                PromptInterval = "abc"
+                Bpm = "128",
+                Cadence = "4",
+                Fps = "15",
+                PromptInterval = "abc",
+                VideoLength = "00:01:00"
             };
 
             var errors = subject.Validate();
@@ -105,275 +149,39 @@ namespace ChronoConfigLibTests
         }
 
         [Fact]
-        public void Validate_NoTracks_ReturnsError()
+        public void Validate_HasNoVideoLength_ReturnsError()
         {
             var subject = GetSubject();
-            subject.Mix = new Mix();
-
-            var errors = subject.Validate();
-
-            Assert.NotNull(errors.FirstOrDefault(e => e.Value == "At least one track is required").Value);
-        }
-
-        [Fact]
-        public void Validate_SectionWithTypeNotSet_ReturnsError()
-        {
-            var subject = GetSubject();
-            subject.Mix = new Mix
+            subject.Configuration = new Configuration
             {
-                Tracks =
-                [
-                    new() {
-                        Sections = [
-                            new() {
-                                Type = TrackSectionType.NONE
-                                }
-                            ]
-                        }
-                ]
+                Bpm = "128",
+                Cadence = "4",
+                Fps = "15",
+                PromptInterval = "30",
+                VideoLength = ""
             };
 
             var errors = subject.Validate();
 
-            Assert.NotNull(errors.FirstOrDefault(e => e.Value == "All sections must have their Type set").Value);
+            Assert.NotNull(errors.FirstOrDefault(e => e.Value == "VideoLength is required").Value);
         }
 
         [Fact]
-        public void Validate_TrackWithNoSections_ReturnsError()
+        public void Validate_VideoLengthIsNotATimespan_ReturnsError()
         {
             var subject = GetSubject();
-            subject.Mix = new Mix
+            subject.Configuration = new Configuration
             {
-                Tracks =
-                [
-                    new()
-                ]
+                Bpm = "128",
+                Cadence = "4",
+                Fps = "15",
+                PromptInterval = "30",
+                VideoLength = "abc"
             };
 
             var errors = subject.Validate();
 
-            Assert.NotNull(errors.FirstOrDefault(e => e.Value == "At least one section is required").Value);
-        }
-
-        [Fact]
-        public void Validate_NoStartingSection_ReturnsError()
-        {
-            var subject = GetSubject();
-            subject.Mix = new Mix
-            {
-                Tracks =
-                [
-                    new() {
-                        Sections = [
-                            new() {
-                                Type = TrackSectionType.END
-                                }
-                            ]
-                        }
-                ]
-            };
-
-            var errors = subject.Validate();
-
-            Assert.NotNull(errors.FirstOrDefault(e => e.Value == "Must have one starting section").Value);
-        }
-
-        [Fact]
-        public void Validate_MoreThanOneStartingSection_ReturnsError()
-        {
-            var subject = GetSubject();
-            subject.Mix = new Mix
-            {
-                Tracks =
-                [
-                    new() {
-                        Sections = [
-                            new() {
-                                Type = TrackSectionType.START
-                                },
-                            new() {
-                                Type = TrackSectionType.START
-                                }
-                            ]
-                        }
-                ]
-            };
-
-            var errors = subject.Validate();
-
-            Assert.NotNull(errors.FirstOrDefault(e => e.Value == "Must have only one starting section").Value);
-        }
-
-        [Fact]
-        public void Validate_NoEndingSection_ReturnsError()
-        {
-            var subject = GetSubject();
-            subject.Mix = new Mix
-            {
-                Tracks =
-                [
-                    new() {
-                        Sections = [
-                            new() {
-                                Type = TrackSectionType.START
-                                }
-                            ]
-                        }
-                ]
-            };
-
-            var errors = subject.Validate();
-
-            Assert.NotNull(errors.FirstOrDefault(e => e.Value == "Must have one ending section").Value);
-        }
-
-        [Fact]
-        public void Validate_MoreThanOneEndingSection_ReturnsError()
-        {
-            var subject = GetSubject();
-            subject.Mix = new Mix
-            {
-                Tracks =
-                [
-                    new() {
-                        Sections = [
-                            new() {
-                                Type = TrackSectionType.END
-                                },
-                            new() {
-                                Type = TrackSectionType.END
-                                }
-                            ]
-                        }
-                ]
-            };
-
-            var errors = subject.Validate();
-
-            Assert.NotNull(errors.FirstOrDefault(e => e.Value == "Must have only one ending section").Value);
-        }
-
-        [Fact]
-        public void Validate_SectionHasInvalidStartTime_ReturnsError()
-        {
-            var subject = GetSubject();
-            subject.Mix = new Mix
-            {
-                Tracks =
-                [
-                    new() {
-                        Sections = [
-                            new() {
-                                StartTime = "abc"
-                                }
-                            ]
-                        }
-                ]
-            };
-
-            var errors = subject.Validate();
-
-            Assert.NotNull(errors.FirstOrDefault(e => e.Value == "Invalid Start Time").Value);
-        }
-
-        [Fact]
-        public void Validate_HasSectionStartTimeLessThanPrevious_ReturnsError()
-        {
-            var subject = GetSubject();
-            subject.Mix = new Mix
-            {
-                Tracks =
-                [
-                    new() {
-                        Sections = [
-                            new() {
-                                StartTime = "00:00:45"
-                                },
-                                new() {
-                                StartTime = "00:00:30"
-                                }
-                            ]
-                        }
-                ]
-            };
-
-            var errors = subject.Validate();
-
-            Assert.NotNull(errors.FirstOrDefault(e => e.Value == "Start Time is less than previous").Value);
-        }
-
-        [Fact]
-        public void UpdateSectionTimes_TimeDidNotChange_ReturnsSameTime()
-        {
-            var subject = GetSubject();
-            subject.Mix.Tracks[0].Sections = [
-                new() {
-                    Number = 1,
-                    StartTime = "00:00:15"
-                    }
-            ];
-
-            subject.UpdateSectionTimes(subject.Mix.Tracks[0], subject.Mix.Tracks[0].Sections[0], "00:00:15");
-
-            Assert.Equal("00:00:15", subject.Mix.Tracks[0].Sections[0].StartTime);
-        }
-
-        [Fact]
-        public void UpdateSectionTimes_TimeIncreasedByFiveSeconds_ShouldIncreaseTimes()
-        {
-            var subject = GetSubject();
-            subject.Mix.Tracks[0].Sections = [
-                new() {
-                    Number = 1,
-                    StartTime = "00:00:15"
-                    },
-                new() {
-                    Number = 2,
-                    StartTime = "00:00:30"
-                    },
-                new() {
-                    Number = 3,
-                    StartTime = "00:00:45"
-                    }
-            ];
-
-            var changedTime = "00:00:35";
-
-
-            subject.UpdateSectionTimes(subject.Mix.Tracks[0], subject.Mix.Tracks[0].Sections[1], changedTime);
-
-            Assert.Equal("00:00:15", subject.Mix.Tracks[0].Sections[0].StartTime);
-            Assert.Equal(changedTime, subject.Mix.Tracks[0].Sections[1].StartTime);
-            Assert.Equal("00:00:50", subject.Mix.Tracks[0].Sections[2].StartTime);
-        }
-
-        [Fact]
-        public void UpdateSectionTimes_TimeDecreasedByFiveSeconds_ShouldDecreaseTimes()
-        {
-            var subject = GetSubject();
-            subject.Mix.Tracks[0].Sections = [
-                new() {
-                    Number = 1,
-                    StartTime = "00:00:15"
-                    },
-                new() {
-                    Number = 2,
-                    StartTime = "00:00:30"
-                    },
-                new() {
-                    Number = 3,
-                    StartTime = "00:00:45"
-                    }
-            ];
-
-            var changedTime = "00:00:25";
-
-
-            subject.UpdateSectionTimes(subject.Mix.Tracks[0], subject.Mix.Tracks[0].Sections[1], changedTime);
-
-            Assert.Equal("00:00:15", subject.Mix.Tracks[0].Sections[0].StartTime);
-            Assert.Equal(changedTime, subject.Mix.Tracks[0].Sections[1].StartTime);
-            Assert.Equal("00:00:40", subject.Mix.Tracks[0].Sections[2].StartTime);
+            Assert.NotNull(errors.FirstOrDefault(e => e.Value == "VideoLength must be a timespan").Value);
         }
 
         private static MainViewModel GetSubject() => new();
