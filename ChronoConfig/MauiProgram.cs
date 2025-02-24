@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui;
+﻿using ChronoConfigLib;
+using CommunityToolkit.Maui;
 using CommunityToolkit.Maui.Storage;
 using Microsoft.Extensions.Logging;
 
@@ -18,8 +19,10 @@ namespace ChronoConfig
                 });
 
             builder.Services.AddMauiBlazorWebView();
+            builder.Services.AddTransient<IMainViewModel, MainViewModel>();
             builder.Services.AddSingleton<IFolderPicker>(FolderPicker.Default);
             builder.Services.AddSingleton<IPlatformAdapter, PlatformAdapter>();
+            builder.Services.AddSingleton<IKeyframesService, KeyframesService>();
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();

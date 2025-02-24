@@ -2,10 +2,10 @@
 {
     public class Configuration
     {
-        public required string Bpm { get; set; }
-        public required string Fps { get; set; }
-        public required string Cadence { get; set; }
-        public required string PromptInterval { get; set; }
-        public required string VideoLength { get; set; }
+        public string Bpm { get; set; } = string.Empty;
+        public string Fps { get; set; } = string.Empty;
+        public string Cadence { get; set; } = string.Empty;
+        public string PromptInterval { get; set; } = string.Empty;
+        public string VideoLength { get; set; } = string.Empty;
     }
 }
